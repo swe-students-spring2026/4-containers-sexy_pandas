@@ -7,7 +7,7 @@ and saves results to MongoDB.
 import os
 import logging
 import time
-from datetime import datetime, timezone
+# from datetime import datetime, timezone
 
 import cv2
 from dotenv import load_dotenv
@@ -124,3 +124,4 @@ if __name__ == "__main__":
     # path = capture_image("capture.jpg")
     # predictions = run_inference("capture.jpg")
     # print(predictions)
+    
