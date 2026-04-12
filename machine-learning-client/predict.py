@@ -1,3 +1,4 @@
+"""Prediction script for garbage classification."""
 from roboflow import Roboflow
 
 rf = Roboflow(api_key="x0xfp0u9VthGksTIwXs8")
