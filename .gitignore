@@ -149,4 +149,3 @@ dmypy.json
 cython_debug/
 
 machine-learning-client/predict.py
-machine-learning-client/config.py
