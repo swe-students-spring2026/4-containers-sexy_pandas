@@ -36,5 +36,5 @@ jobs:
           ROBOFLOW_API_KEY: ${{ secrets.ROBOFLOW_API_KEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
-          coverage run --omit="*/config-3.py" -m pytest ../test/ -v
+          coverage run --omit="*/config-3.py,*/config*.py" -m pytest ../test/ -v
           coverage report --fail-under=80
