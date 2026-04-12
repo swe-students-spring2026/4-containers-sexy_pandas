@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 pylint = "*"
-black = "23.11.0"
+black = "*"
 
 roboflow = "*"
 pymongo = "*"
@@ -14,7 +14,7 @@ opencv-python = "*"
 
 [dev-packages]
 pylint = "*"
-black = "23.11.0"
+black = "*"
 pytest = "*"
 pytest-cov = "*"
 coverage = "*"
