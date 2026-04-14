@@ -117,33 +117,80 @@ def extract_prediction(response_data, result):
 
 @app.route("/")
 def index():
-    """Home page."""
-    return render_template("index.html")
+    """Home page with dashboard summary."""
+    records = list(collection.find().sort("timestamp", -1).limit(5))
+    records = [format_record_for_display(r) for r in records]
+    stats = build_dashboard_stats(records)
+    return render_template("index.html", records=records, stats=stats)
 
 
-@app.route("/result")
-def show_result():
-    """Show static result page."""
-    item = request.args.get("item", "Unknown Item")
-    return render_template(
-        "result.html",
-        result={
-            "item": item,
-            "category": "Recyclable",
-            "bin_color": "Blue",
-            "bin_emoji": "♻️",
-            "confidence": 92,
-            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
-        },
-    )
+def get_bin_color(bin_name):
+    """Return display color for a bin."""
+    if bin_name == "Blue":
+        return "#2196F3"
+    if bin_name == "Green":
+        return "#2e8b57"
+    if bin_name == "Gray":
+        return "#666666"
+    return "#999999"
 
+
+def get_bin_emoji(bin_name):
+    """Return emoji for a bin."""
+    if bin_name == "Blue":
+        return "♻️"
+    if bin_name == "Green":
+        return "🌱"
+    if bin_name == "Gray":
+        return "🗑️"
+    return "❓"
+
+
+def format_record_for_display(record):
+    """Prepare a DB record for template display."""
+    formatted = normalize_json(record)
+    bin_name = formatted.get("bin", "Unknown")
+    formatted["bin_color"] = get_bin_color(bin_name)
+    formatted["bin_emoji"] = get_bin_emoji(bin_name)
+    formatted.setdefault("image_url", None)
+    formatted.setdefault("category", "Unknown")
+    formatted.setdefault("item", "Unknown Item")
+    formatted.setdefault("confidence", 0)
+    formatted.setdefault("timestamp", "N/A")
+    return formatted
+
+@app.route("/result/<record_id>")
+def result_detail(record_id):
+    """Show a single classification result from the database."""
+    try:
+        record = collection.find_one({"_id": ObjectId(record_id)})
+    except (ValueError, TypeError):
+        record = None
+
+    if not record:
+        return render_template(
+            "result.html",
+            result={
+                "item": "Unknown Item",
+                "category": "Unknown",
+                "bin": "Unknown",
+                "bin_color": "#999999",
+                "bin_emoji": "❓",
+                "confidence": 0,
+                "timestamp": "N/A",
+                "model_error": "Record not found.",
+                "image_url": None,
+            },
+        ), 404
+
+    result = format_record_for_display(record)
+    return render_template("result.html", result=result)
 
 @app.route("/history")
 def history():
     """Show classification history."""
     records = list(collection.find().sort("timestamp", -1).limit(20))
-    for r in records:
-        r["_id"] = str(r["_id"])
+    records = [format_record_for_display(r) for r in records]
     return render_template("history.html", records=records)
 
 
@@ -169,14 +216,16 @@ def classify():
         result["model_error"] = str(exc)
 
     try:
-        collection.insert_one(normalize_json(result))
+        inserted = collection.insert_one(normalize_json(result))
         result["saved"] = True
+        result["record_id"] = str(inserted.inserted_id)
     except PyMongoError as exc:
         app.logger.error("DB insert failed: %s", exc)
         result["saved"] = False
         result["db_error"] = str(exc)
 
     return jsonify(normalize_json(result))
+
 
 
 if __name__ == "__main__":
