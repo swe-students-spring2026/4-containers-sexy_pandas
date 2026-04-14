@@ -31,6 +31,7 @@ model_client = InferenceHTTPClient(
 
 
 def normalize_json(value):
+    """Convert non-JSON-safe values into JSON-safe equivalents."""
     if isinstance(value, ObjectId):
         return str(value)
     if isinstance(value, dict):
@@ -41,6 +42,7 @@ def normalize_json(value):
 
 
 def normalize_confidence(value):
+    """Convert a model confidence value into an integer percentage."""
     if value is None:
         return 0
     if isinstance(value, str):
@@ -57,6 +59,7 @@ def normalize_confidence(value):
 
 
 def map_bin(category_value):
+    """Choose a bin color based on the predicted category label."""
     if not category_value:
         return "Unknown"
     normalized = str(category_value).lower()
@@ -70,6 +73,7 @@ def map_bin(category_value):
 
 
 def build_result(item):
+    """Create a new result record with default classification values."""
     return {
         "item": item,
         "category": "Unknown",
@@ -81,6 +85,7 @@ def build_result(item):
 
 
 def fetch_model_response(image_file, item):
+    """Send the image or item name to the model and return its raw response."""
     if image_file:
         suffix = os.path.splitext(image_file.filename)[1]
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temp_file:
@@ -99,6 +104,7 @@ def fetch_model_response(image_file, item):
 
 
 def extract_prediction(response_data, result):
+    """Extract category, confidence, and bin information from model response."""
     if not isinstance(response_data, dict):
         return
     if response_data.get("predictions"):
@@ -122,11 +128,13 @@ def extract_prediction(response_data, result):
 
 @app.route("/")
 def index():
+    """Render the home page for uploading garbage images."""
     return render_template("index.html")
 
 
 @app.route("/result")
 def show_result():
+    """Render a placeholder result page for the given item."""
     item = request.args.get("item", "Unknown Item")
     result_data = {
         "item": item,
@@ -141,6 +149,7 @@ def show_result():
 
 @app.route("/history")
 def history():
+    """Render the history page showing recent classification records."""
     records = list(collection.find().sort("timestamp", -1).limit(20))
     for record in records:
         record["_id"] = str(record["_id"])
@@ -149,11 +158,13 @@ def history():
 
 @app.route("/guide")
 def guide():
+    """Render the recycling guide page."""
     return render_template("guide.html")
 
 
 @app.route("/classify", methods=["POST"])
 def classify():
+    """Handle the classification request, call the model, and save the result."""
     item = request.form.get("item", "Unknown Item").strip()
     image_file = request.files.get("image")
     result = build_result(item)
