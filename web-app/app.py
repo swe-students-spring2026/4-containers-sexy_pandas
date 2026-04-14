@@ -114,6 +114,7 @@ def extract_prediction(response_data, result):
 
     result["bin"] = map_bin(result["category"])
 
+
 def build_dashboard_stats(records):
     """Build summary stats for dashboard."""
     stats = {
