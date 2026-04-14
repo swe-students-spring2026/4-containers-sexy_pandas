@@ -2,7 +2,7 @@
 import os
 import tempfile
 from datetime import datetime
-
+import requests
 from bson import ObjectId
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
@@ -24,10 +24,10 @@ mongo_client = MongoClient(MONGO_URI)
 db = mongo_client[DB_NAME]
 collection = db["detections"]
 
-model_client = InferenceHTTPClient(
-    api_url=ML_MODEL_URL,
-    api_key=ML_MODEL_API_KEY,
-)
+# model_client = InferenceHTTPClient(
+#     api_url=ML_MODEL_URL,
+#     api_key=ML_MODEL_API_KEY,
+# )
 
 
 def normalize_json(value):
@@ -84,24 +84,20 @@ def build_result(item):
     }
 
 
+ML_CLIENT_URL = os.getenv("ML_CLIENT_URL", "http://ml-client:8000/infer")
+
 def fetch_model_response(image_file, item):
-    """Send the image or item name to the model and return its raw response."""
-    if image_file:
-        suffix = os.path.splitext(image_file.filename)[1]
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temp_file:
-            image_file.save(temp_file.name)
-            temp_path = temp_file.name
-        response = model_client.infer(temp_path, model_id=ML_MODEL_ID)
-        os.unlink(temp_path)
-    else:
-        response = model_client.infer(item, model_id=ML_MODEL_ID)
+    try:
+        if image_file:
+            files = {"image": (image_file.filename, image_file.stream)}
+            data = {"item": item}
+            res = requests.post(ML_CLIENT_URL, files=files, data=data)
+        else:
+            res = requests.post(ML_CLIENT_URL, data={"item": item})
 
-    if hasattr(response, "json"):
-        return response.json()
-    if isinstance(response, dict):
-        return response
-    return {}
-
+        return res.json()
+    except Exception as e:
+        return {"error": str(e)}
 
 def extract_prediction(response_data, result):
     """Extract category, confidence, and bin information from model response."""

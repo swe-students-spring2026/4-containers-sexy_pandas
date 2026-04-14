@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
 
   mongodb:
@@ -10,6 +12,20 @@ services:
     networks:
       - app-network
 
+  ml-client:
+    build:
+      context: ./machine-learning-client
+      dockerfile: Dockerfile
+    container_name: ml-client
+    ports:
+      - "8000:8000"
+    environment:
+      - ML_MODEL_URL=https://serverless.roboflow.com
+      - ML_MODEL_API_KEY=${ROBOFLOW_API_KEY}
+      - ML_MODEL_ID=garbage-classification-3/2
+    networks:
+      - app-network
+
   web-app:
     build:
       context: ./web-app
@@ -19,12 +35,11 @@ services:
       - "5001:5001"
     depends_on:
       - mongodb
+      - ml-client
     environment:
       - MONGO_URI=mongodb://mongodb:27017
       - DB_NAME=garbage_classifier
-      - ML_MODEL_URL=https://serverless.roboflow.com
-      - ML_MODEL_API_KEY=${ROBOFLOW_API_KEY}
-      - ML_MODEL_ID=garbage-classification-3/2
+      - ML_CLIENT_URL=http://ml-client:8000/infer
     networks:
       - app-network
 
