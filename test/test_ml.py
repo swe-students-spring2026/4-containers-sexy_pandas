@@ -74,12 +74,11 @@ def test_infer_image(mock_model, client):
 # ---------------------------
 @patch("app.model_client")
 def test_infer_failure(mock_model, client):
+    """Test that ML failure raises an exception."""
+
     mock_model.infer.side_effect = Exception("model error")
 
-    response = client.post("/infer", data={"item": "plastic bottle"})
+    with pytest.raises(Exception) as exc_info:
+        client.post("/infer", data={"item": "plastic bottle"})
 
-    assert response.status_code == 500
-    data = response.get_json()
-
-    assert "error" in data
-    assert data["error"] == "model error"
+    assert "model error" in str(exc_info.value)
