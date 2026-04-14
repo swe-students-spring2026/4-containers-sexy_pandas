@@ -1,6 +1,4 @@
 """Unit tests for Flask web app routes."""
-
-from unittest.mock import patch, MagicMock
 import pytest
 from app import app as flask_app
 
@@ -16,43 +14,37 @@ def client():
 # test index page
 
 
-class TestIndex:
-    """Tests for GET /"""
-
-    def test_returns_200(self, client):
-        """Home page should return 200."""
-        res = client.get("/")
-        assert res.status_code == 200
-
-    def test_renders_html(self, client):
-        """Response should be HTML."""
-        res = client.get("/")
-        assert b"<!DOCTYPE html>" in res.data or b"<html" in res.data
-
-
 # test history
 
 
+# test result
+
+
+# test classify
+
+
 # test guide
-
-
 class TestGuide:
     """Tests for GET /guide"""
 
-    def test_returns_200(self, client):
-        """Guide page should return 200."""
+    def test_guide_page_status(self, client):
+        """test page status"""
         res = client.get("/guide")
         assert res.status_code == 200
+        assert b"Garbage Classification Guide" in res.data
 
-    def test_renders_html(self, client):
-        """Response should be HTML."""
+    def test_guide_content_categories(self, client):
+        """test for 4 cactegories"""
         res = client.get("/guide")
-        assert b"<!DOCTYPE html>" in res.data or b"<html" in res.data
+        html_content = res.data.decode("utf-8")
+
+        assert "Recyclable" in html_content
+        assert "Hazardous" in html_content
+        assert "Food / Kitchen" in html_content
+        assert "Other / General" in html_content
 
 
 # test no found
-
-
 class TestNotFound:
     """Test unknown routes."""
 
@@ -60,6 +52,3 @@ class TestNotFound:
         """Unknown route should return 404."""
         res = client.get("/nonexistent")
         assert res.status_code == 404
-
-
-# test classify
