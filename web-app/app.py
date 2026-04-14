@@ -90,11 +90,7 @@ def fetch_model_response(image_file, item):
             data = {"item": item}
             res = requests.post(ML_CLIENT_URL, files=files, data=data, timeout=10)
         else:
-            res = requests.post(
-                ML_CLIENT_URL,
-                data={"item": item},
-                timeout=10
-            )
+            res = requests.post(ML_CLIENT_URL, data={"item": item}, timeout=10)
 
         return res.json()
 
@@ -109,11 +105,7 @@ def extract_prediction(response_data, result):
 
     if response_data.get("predictions"):
         top = response_data["predictions"][0]
-        result["category"] = (
-            top.get("class")
-            or top.get("label")
-            or result["category"]
-        )
+        result["category"] = top.get("class") or top.get("label") or result["category"]
         result["confidence"] = normalize_confidence(top.get("confidence"))
     else:
         result["category"] = response_data.get("category", result["category"])
