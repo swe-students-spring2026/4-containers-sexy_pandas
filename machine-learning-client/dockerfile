@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY ml_client.py .
-COPY database.py .
+COPY app.py .
 
-CMD ["python", "ml_client.py"]
+
+CMD ["python", "app.py"]

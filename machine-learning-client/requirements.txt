@@ -6,3 +6,5 @@ pylint
 pytest
 pytest-cov
 coverage
+flask
+inference-sdk
