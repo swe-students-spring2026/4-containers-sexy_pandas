@@ -1,10 +1,11 @@
 """Unit tests for Flask web app routes."""
+# pylint: disable=missing-class-docstring,missing-function-docstring,too-few-public-methods,unused-argument
 
 import pytest
-from app import app as flask_app
-
 from bson import ObjectId
+
 import app as web_app
+from app import app as flask_app
 
 
 @pytest.fixture(name="client")
