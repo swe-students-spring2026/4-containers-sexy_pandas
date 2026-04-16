@@ -1,4 +1,5 @@
 """Unit tests for Flask web app routes."""
+
 # pylint: disable=missing-class-docstring,missing-function-docstring,too-few-public-methods,unused-argument
 
 import pytest
