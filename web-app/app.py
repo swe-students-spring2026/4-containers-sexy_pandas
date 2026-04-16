@@ -82,7 +82,9 @@ def build_result(item):
         "category": "Unknown",
         "bin": "Unknown",
         "confidence": 0,
-        "timestamp": datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": datetime.now(ZoneInfo("America/New_York")).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        ),
         "model_error": None,
     }
 
